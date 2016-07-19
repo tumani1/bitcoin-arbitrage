@@ -69,7 +69,7 @@ class PrivateHuobiCNY(Market):
         resp['avg_price'] = float(response['processed_price'])
 
         status = response['status']
-        if status == 3:
+        if status == 3 or status == 6:
             resp['status'] = 'CANCELED'
         elif status == 2:
             resp['status'] = 'CLOSE'
