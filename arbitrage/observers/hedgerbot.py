@@ -179,6 +179,8 @@ class HedgerBot(MarketMaker):
         for x in price_candidate_list:
             return x
 
+        return super().get_sell_price()
+
         logging.error (sell_orders)
         logging.error (sell_prices)
         logging.error (price_candidate_set)
@@ -193,6 +195,8 @@ class HedgerBot(MarketMaker):
 
         for x in price_candidate_list:
             return x
+        
+        return super().get_buy_price()
 
         logging.error(self.buyprice_spread)
         logging.error (buy_orders)
