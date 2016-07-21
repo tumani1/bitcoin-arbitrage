@@ -70,7 +70,7 @@ class BasicBot(Observer):
                 'time': time.time()
             }
             self.orders.append(order)
-            logging.info("submit order %s" % (order))
+            logging.verbose("submit order %s" % (order))
 
             return order
 
