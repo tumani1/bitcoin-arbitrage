@@ -8,7 +8,6 @@ import os, time
 import sys
 import traceback
 import config
-import gevent
 
 class BasicBot(Observer):
     def __init__(self):
