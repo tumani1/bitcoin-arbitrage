@@ -8,6 +8,7 @@ import os, time
 import sys
 import traceback
 import config
+import gevent
 
 class BasicBot(Observer):
     def __init__(self):
@@ -17,6 +18,28 @@ class BasicBot(Observer):
         self.min_maker_volume = config.MAKER_MIN_VOLUME
         self.max_taker_volume = config.TAKER_MAX_VOLUME
         self.min_taker_volume = config.TAKER_MIN_VOLUME
+
+        logging.info('BasicBot Setup complete')
+
+    def process_message(self,message):
+        pass
+
+    def msg_server(self):
+        import zmq
+        import time
+        context = zmq.Context()
+        socket = context.socket(zmq.PULL)
+        socket.bind("tcp://*:18039")
+
+        logging.info("msg_server start...")
+        while True:
+            # Wait for next request from client
+            message = socket.recv()
+            logging.info("Received request: %s", message)
+            self.process_message(message)
+
+            time.sleep (1) # Do some 'work'
+
 
     def new_order(self, kexchange, type, maker_only=True, amount=None, price=None):
         if type == 'buy' or type == 'sell':

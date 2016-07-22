@@ -10,6 +10,7 @@ import traceback
 import config
 from private_markets import haobtccny, brokercny
 from .marketmaker import MarketMaker
+import threading
 
 class HedgerBot(MarketMaker):
     exchange = 'HaobtcCNY'
@@ -36,10 +37,43 @@ class HedgerBot(MarketMaker):
         except:
             pass
 
-        self.clients[self.exchange].cancel_all()
-
-        logging.info('Setup complete')
+        t = threading.Thread(target = self.msg_server)
+        t.start()
+        logging.info('HedgerBot Setup complete')
         # time.sleep(2)
+
+    def process_message(self,message):
+        kexchange = self.exchange
+
+        try:
+            message = message.decode('utf-8')
+            message = json.loads(message)
+            logging.info('msg:%s', message)
+            type = message['type']
+            price = message['price']
+
+            logging.info('msg type:%s %s', type, price)
+
+            if type == 'buy':
+                buy_orders = self.get_orders('buy')
+                buy_orders.sort(key=lambda x: x['price'], reverse=True)
+
+                for buy_order in buy_orders:
+                    if buy_order['price'] == price:
+                        self.cancel_order(kexchange, 'buy', buy_order['id'])
+                        break
+            elif type == 'sell':
+                sell_orders = self.get_orders('sell')
+                sell_orders.sort(key=lambda x: x['price'])
+                
+                for sell_order in sell_orders:
+                    if sell_order['price'] == price:
+                        self.cancel_order(kexchange, 'sell', sell_order['id'])
+                        break
+        except Exception as e:
+            logging.error("process message exception %s", e)
+            traceback.print_exc()
+
 
     def market_maker(self, depths):
         # super().market_maker(depths)

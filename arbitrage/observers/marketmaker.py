@@ -49,10 +49,9 @@ class MarketMaker(BasicBot):
         except:
             pass
 
-        for kclient in self.clients:
-            self.clients[kclient].cancel_all()
+        self.clients[self.exchange].cancel_all()
 
-        logging.info('Setup complete')
+        logging.info('MarketMaker Setup complete')
         # time.sleep(2)
 
     def clean_up(self):

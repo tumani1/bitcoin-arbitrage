@@ -44,7 +44,7 @@ You need Python3 to run this program. To install on Debian, Ubuntu, or
 variants of them, use:
 
     $ sudo apt-get install python3 python3-pip python-nose
-    $ pip3 install requests
+    $ pip3 install requests zmq
 
 You need market broker service, please read its README to install then run it. 
   
