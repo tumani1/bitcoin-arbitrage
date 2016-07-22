@@ -13,6 +13,7 @@ import json
 import config
 import logging
 import lib.broker_api as exchange_api
+import traceback
 
 class PrivateBrokerCNY(Market):
     def __init__(self):
@@ -58,7 +59,13 @@ class PrivateBrokerCNY(Market):
 
     def get_info(self):
         """Get balance"""
-        accounts = exchange_api.exchange_get_account()
+        try:
+            accounts = exchange_api.exchange_get_account()
+        except Exception as e:
+            traceback.print_exc()
+            exchange_api.init_broker()
+            return
+
         if accounts:
             self.cny_balance = 0
             self.btc_balance = 0
