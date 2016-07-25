@@ -53,6 +53,7 @@ class BasicBot(Observer):
 
             socket.send_string(json.dumps(message))
         except Exception as e:
+            logging.warn("notify_msg Exception")
             pass
 
     def new_order(self, kexchange, type, maker_only=True, amount=None, price=None):

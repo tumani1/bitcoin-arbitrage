@@ -10,7 +10,7 @@ import sys
 import traceback
 import config
 from .basicbot import BasicBot
-
+import threading
 
 class MarketMaker(BasicBot):
     exchange = 'HaobtcCNY'
@@ -107,7 +107,7 @@ class MarketMaker(BasicBot):
 
         buyprice=min(buyprice, peer_bid_hedge_price) - self.bid_price_risk
         sellprice=max(sellprice, peer_ask_hedge_price) + self.ask_price_risk
-        logging.info("sellprice/buyprice=(%s/%s)" % (sellprice, buyprice))
+        logging.debug("sellprice/buyprice=(%s/%s)" % (sellprice, buyprice))
 
         self.buyprice = buyprice
         self.sellprice = sellprice
@@ -118,9 +118,9 @@ class MarketMaker(BasicBot):
         # query orders
         if self.is_buying():
             for buy_order in self.get_orders('buy'):
-                logging.info(buy_order)
+                logging.debug(buy_order)
                 result = self.clients[kexchange].get_order(buy_order['id'])
-                logging.info (result)
+                logging.debug(result)
                 if not result:
                     logging.warn("get_order buy #%s failed" % (buy_order['id']))
                     return
@@ -138,16 +138,16 @@ class MarketMaker(BasicBot):
                         logging.info("[TraderBot] cancel last buy trade " +
                                      "occured %.2f seconds ago" %
                                      (current_time - buy_order['time']))
-                        logging.info("buyprice %s result['price'] = %s[%s]" % (buyprice, result['price'], result['price'] != buyprice))
+                        logging.info("cancel buyprice %s result['price'] = %s[%s]" % (buyprice, result['price'], result['price'] != buyprice))
 
                         self.cancel_order(kexchange, 'buy', buy_order['id'])
 
 
         if self.is_selling():
             for sell_order in self.get_orders('sell'):
-                logging.info(sell_order)
+                logging.debug(sell_order)
                 result = self.clients[kexchange].get_order(sell_order['id'])
-                logging.info (result)
+                logging.debug(result)
                 if not result:
                     logging.warn("get_order sell #%s failed" % (sell_order['id']))
                     return
@@ -165,15 +165,15 @@ class MarketMaker(BasicBot):
                         logging.info("[TraderBot] cancel last SELL trade " +
                                      "occured %.2f seconds ago" %
                                      (current_time - sell_order['time']))
-                        logging.info("sellprice %s result['price'] = %s [%s]" % (sellprice, result['price'], result['price'] != sellprice))
+                        logging.info("cancel sellprice %s result['price'] = %s [%s]" % (sellprice, result['price'], result['price'] != sellprice))
 
                         self.cancel_order(kexchange, 'sell', sell_order['id'])
             
         # excute trade
         if self.buying_len() < config.MAKER_BUY_QUEUE:
-            self.new_order(kexchange, 'buy')
+            self.new_order_notify(kexchange, 'buy')
         if self.selling_len() < config.MAKER_SELL_QUEUE:
-            self.new_order(kexchange, 'sell')
+            self.new_order_notify(kexchange, 'sell')
 
     def update_trade_history(self, time, price, cny, btc):
         filename = self.out_dir + self.filename
@@ -222,10 +222,14 @@ class MarketMaker(BasicBot):
     def btc_balance_total(self, price):
         return self.btc_balance + self.btc_frozen  + (self.cny_balance +self.cny_frozen ) / (price*1.0)
 
-    def new_order(self, kexchange, type, maker_only=True, amount=None, price=None):
+    def new_order_notify(self, kexchange, type, maker_only=True, amount=None, price=None):
         order = super().new_order(kexchange, type, maker_only, amount, price)
+        
         if order:
-            self.notify_msg(order['type'], order['price'])
+            # self.notify_msg(order['type'], order['price'])
+            t = threading.Thread(target = self.notify_msg, args=(order['type'], order['price'],))
+            t.start()
+            logging.info("current has %d threads" % (threading.activeCount() - 1))
 
     def begin_opportunity_finder(self, depths):
         self.market_maker(depths)
