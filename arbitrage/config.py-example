@@ -23,6 +23,9 @@ market_expiration_time = 120  # in seconds: 2 minutes
 
 refresh_rate = 20
 
+trade_wait = 10
+
+
 MAKER_TRADE_ENABLE = False
 TAKER_TRADE_ENABLE = True
 # maker
@@ -88,6 +91,9 @@ xmpp_to = "TO@jabber.org"
 # broker thrift server
 BROKER_HOST = "127.0.0.1"
 BROKER_PORT = 18030
+
+ZMQ_HOST = "127.0.0.1"
+ZMQ_PORT = 18031
 
 #### Trader Bot Config
 # Access to Private APIs

@@ -36,10 +36,10 @@ class MarketMaker(BasicBot):
         self.cny_total = 0
         self.btc_total = 0
 
-        self.bid_fee_rate = 0.0005
-        self.ask_fee_rate = 0.001
-        self.bid_price_risk = 0
-        self.ask_price_risk = 0
+        self.bid_fee_rate = config.bid_fee_rate
+        self.ask_fee_rate = config.ask_fee_rate
+        self.bid_price_risk = config.bid_price_risk
+        self.ask_price_risk = config.ask_price_risk
 
         self.peer_exchange ='OKCoinCNY'
         # self.peer_exchange ='HuobiCNY'
@@ -221,6 +221,11 @@ class MarketMaker(BasicBot):
     
     def btc_balance_total(self, price):
         return self.btc_balance + self.btc_frozen  + (self.cny_balance +self.cny_frozen ) / (price*1.0)
+
+    def new_order(self, kexchange, type, maker_only=True, amount=None, price=None):
+        order = super().new_order(kexchange, type, maker_only, amount, price)
+        if order:
+            self.notify_msg(order['type'], order['price'])
 
     def begin_opportunity_finder(self, depths):
         self.market_maker(depths)

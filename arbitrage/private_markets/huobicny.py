@@ -55,11 +55,12 @@ class PrivateHuobiCNY(Market):
     def _get_order(self, order_id):
         response = self.market.orderInfo(order_id)
 
-        if response and "code" in response:
-            logging.warn (response)
-            return False
         if not response:
             return response
+
+        if "code" in response:
+            logging.warn (response)
+            return False
 
         resp = {}
         resp['order_id'] = response['id']
@@ -104,7 +105,6 @@ class PrivateHuobiCNY(Market):
                 self.cny_frozen = float(response["frozen_cny_display"])
         except  Exception as ex:
             logging.warn("get_info failed :%s" % ex)
-            t,v,tb = sys.exc_info()
             traceback.print_exc()
 
             return False

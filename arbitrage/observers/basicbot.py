@@ -28,17 +28,32 @@ class BasicBot(Observer):
         import time
         context = zmq.Context()
         socket = context.socket(zmq.PULL)
-        socket.bind("tcp://*:18039")
+        socket.bind("tcp://*:%s"%config.ZMQ_PORT)
 
-        logging.info("msg_server start...")
+        logging.info("zmq msg_server start...")
         while True:
             # Wait for next request from client
             message = socket.recv()
-            logging.info("Received request: %s", message)
+            logging.info("new pull message: %s", message)
             self.process_message(message)
 
             time.sleep (1) # Do some 'work'
 
+    def notify_msg(self, type, price):
+        import zmq
+        try:
+            context = zmq.Context()
+            socket = context.socket(zmq.PUSH)
+
+            socket.connect ("tcp://%s:%s" % (config.ZMQ_HOST, config.ZMQ_PORT))
+            time.sleep(1)
+
+            message = {'type':type, 'price':price}
+            logging.info( "notify message %s", json.dumps(message))
+
+            socket.send_string(json.dumps(message))
+        except Exception as e:
+            pass
 
     def new_order(self, kexchange, type, maker_only=True, amount=None, price=None):
         if type == 'buy' or type == 'sell':
@@ -79,7 +94,7 @@ class BasicBot(Observer):
             if order_id == -1:
                 logging.warn("%s @%s %f/%f BTC failed, %s" % (type, kexchange, amount, price, order_id))
                 return None
-            
+
             order = {
                 'market': kexchange, 
                 'id': order_id,
