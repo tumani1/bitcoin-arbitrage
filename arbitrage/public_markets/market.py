@@ -8,6 +8,8 @@ import sys
 from fiatconverter import FiatConverter
 from utils import log_exception
 import traceback
+import config
+import threading
 
 class Market(object):
     def __init__(self, currency):
@@ -37,6 +39,39 @@ class Market(object):
             for order in self.depth[direction]:
                 order["price"] = self.fc.convert(order["price"], self.currency, "CNY")
 
+    def start_websocket_depth(self):
+        if config.SUPPORT_WEBSOCKET:
+            t = threading.Thread(target = self.websocket_depth)
+            t.start()
+
+    def websocket_depth(self):
+        import json
+        from socketIO_client import SocketIO
+
+        def on_message(data):
+            data = data.decode('utf8')
+            if data[0] != '2':
+                return
+
+            data = json.loads(data[1:])
+            depth = data[1]
+
+            logging.info("depth coming: %s", depth['market'])
+            self.depth_updated = depth['timestamp']
+            self.depth = self.format_depth(depth)
+        
+        def on_connect():
+            logging.info('[Connected]')
+
+            socketIO.emit('land', {'app': 'haobtcnotify', 'events':[self.event]});
+
+        with SocketIO(config.WEBSOCKET_HOST, port=config.WEBSOCKET_PORT) as socketIO:
+
+            socketIO.on('connect', on_connect)
+            socketIO.on('message', on_message)
+
+            socketIO.wait()
+    
     def ask_update_depth(self):
         try:
             self.update_depth()
@@ -69,3 +104,15 @@ class Market(object):
 
     def sell(self, price, amount):
         pass
+
+    def sort_and_format(self, l, reverse=False):
+        l.sort(key=lambda x: float(x[0]), reverse=reverse)
+        r = []
+        for i in l:
+            r.append({'price': float(i[0]), 'amount': float(i[1])})
+        return r
+
+    def format_depth(self, depth):
+        bids = self.sort_and_format(depth['bids'], True)
+        asks = self.sort_and_format(depth['asks'], False)
+        return {'asks': asks, 'bids': bids}
