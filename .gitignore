@@ -54,6 +54,7 @@ download.sh
 *.log
 *.do
 stata/
-# marketmaker.py
+marketmaker.py
+hedgebot.py
 
 
