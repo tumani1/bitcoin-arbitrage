@@ -23,7 +23,7 @@ class Market(object):
 
     def terminate(self):
         self.is_terminated = True
-        
+
     def get_depth(self):
         timediff = time.time() - self.depth_updated
         if timediff > self.update_rate:
@@ -60,7 +60,7 @@ class Market(object):
             data = json.loads(data[1:])
             depth = data[1]
 
-            logging.info("depth coming: %s", depth['market'])
+            logging.debug("depth coming: %s", depth['market'])
             self.depth_updated = int(depth['timestamp']/1000)
             self.depth = self.format_depth(depth)
         
