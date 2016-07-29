@@ -11,6 +11,8 @@ import config
 
 class BasicBot(Observer):
     def __init__(self):
+        super().__init__()
+
         self.orders = []
 
         self.max_maker_volume = config.MAKER_MAX_VOLUME
@@ -31,7 +33,7 @@ class BasicBot(Observer):
         socket.bind("tcp://*:%s"%config.ZMQ_PORT)
 
         logging.info("zmq msg_server start...")
-        while True:
+        while not self.is_terminated:
             # Wait for next request from client
             message = socket.recv()
             logging.info("new pull message: %s", message)

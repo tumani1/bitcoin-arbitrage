@@ -2,8 +2,11 @@ import abc
 
 
 class Observer(object, metaclass=abc.ABCMeta):
-    def clean_up(self):
-        pass
+    def __init__(self):
+        self.is_terminated = False
+
+    def terminate(self):
+        self.is_terminated = True
     
     def begin_opportunity_finder(self, depths):
         pass

@@ -219,10 +219,12 @@ class Arbitrer(object):
         for observer in self.observers:
             observer.end_opportunity_finder()
 
-    def clean_up(self):
+    def terminate(self):
         for observer in self.observers:
-            observer.clean_up()
-            return
+            observer.terminate()
+
+        for market in self.markets:
+            market.terminate()
 
     def loop(self):
         #
@@ -242,6 +244,6 @@ class Arbitrer(object):
             
             if is_sigint_up:
                 # 中断时需要处理的代码
-                self.clean_up()
+                self.terminate()
                 print ("Exit")
                 break

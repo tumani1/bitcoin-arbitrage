@@ -19,7 +19,11 @@ class Market(object):
         self.update_rate = 1
         self.fc = FiatConverter()
         self.fc.update()
+        self.is_terminated = False
 
+    def terminate(self):
+        self.is_terminated = True
+        
     def get_depth(self):
         timediff = time.time() - self.depth_updated
         if timediff > self.update_rate:
@@ -57,7 +61,7 @@ class Market(object):
             depth = data[1]
 
             logging.info("depth coming: %s", depth['market'])
-            self.depth_updated = depth['timestamp']
+            self.depth_updated = int(depth['timestamp']/1000)
             self.depth = self.format_depth(depth)
         
         def on_connect():

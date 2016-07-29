@@ -54,10 +54,12 @@ class MarketMaker(BasicBot):
         logging.info('MarketMaker Setup complete')
         # time.sleep(2)
 
-    def clean_up(self):
+    def terminate(self):
+        super().terminate()
+        
         self.clients[self.exchange].cancel_all()
 
-        logging.info('Clean up complete')
+        logging.info('terminate complete')
 
     def hedge_order(self, order, result):
         pass
