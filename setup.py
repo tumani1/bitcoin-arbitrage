@@ -8,14 +8,18 @@ if sys.version_info < (3,):
     print("bitcoin-arbitrage requires Python version >= 3.0")
     sys.exit(1)
 
+with open('arbitrage/requirements.txt') as f:
+    requirements = f.read().splitlines()
+
 setup(name='bitcoin-arbitrage',
-      packages = ["arbitrage"],
-      version='0.2',
-      description='Bitcoin arbitrage opportunity watcher',
-      author='Phil Song',
-      author_email='songbohr@gmail.com',
-      url='https://github.com/philsong/bitcoin-arbitrage',
-      arbitrage=['bin/bitcoin-arbitrage'],
-      test_suite='nose.collector',
-      tests_require=['nose'],
-  )
+    packages = ["arbitrage"],
+    version='0.2',
+    description='Bitcoin arbitrage opportunity watcher',
+    author='Phil Song',
+    author_email='songbohr@gmail.com',
+    url='https://github.com/philsong/bitcoin-arbitrage',
+    arbitrage=['bin/bitcoin-arbitrage'],
+    test_suite='nose.collector',
+    tests_require=['nose'],
+    install_requires=requirements,
+)
