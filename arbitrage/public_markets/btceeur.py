@@ -1,7 +1,8 @@
-import urllib.request
+import json
 import urllib.error
 import urllib.parse
-import json
+import urllib.request
+
 from .market import Market
 
 
@@ -21,6 +22,7 @@ class BtceEUR(Market):
         res = urllib.request.urlopen(req)
         depth = json.loads(res.read().decode('utf8'))
         self.depth = self.format_depth(depth)
+
 
 if __name__ == "__main__":
     market = BtceEUR()

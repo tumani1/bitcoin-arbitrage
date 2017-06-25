@@ -7,7 +7,7 @@ class Observer(object, metaclass=abc.ABCMeta):
 
     def terminate(self):
         self.is_terminated = True
-    
+
     def begin_opportunity_finder(self, depths):
         pass
 

@@ -1,10 +1,10 @@
 import logging
-import config
 import time
-from .observer import Observer
-from private_markets import haobtccny,huobicny,okcoincny
 
+import config
+from private_markets import haobtccny, okcoincny
 from .emailer import send_email
+from .observer import Observer
 
 
 class SpecializedTraderBot(Observer):
@@ -60,7 +60,7 @@ class SpecializedTraderBot(Observer):
             return
 
         if perc > 20:  # suspicous profit, added after discovering btc-central may send corrupted order book
-            logging.warn("Profit=%f seems malformed" % (perc, ))
+            logging.warn("Profit=%f seems malformed" % (perc,))
             return
 
         # Update client balance
@@ -72,8 +72,10 @@ class SpecializedTraderBot(Observer):
             self.clients[kbid].btc_balance)
         volume = min(volume, max_volume, config.max_tx_volume)
         if volume < config.min_tx_volume:
-            logging.warn("Can't automate this trade, minimum volume transaction not reached %f/%f" % (volume, config.min_tx_volume))
-            logging.info("Balance on %s: %f CNY - Balance on %s: %f BTC" % (kask, self.clients[kask].cny_balance, kbid, self.clients[kbid].btc_balance))
+            logging.warn("Can't automate this trade, minimum volume transaction not reached %f/%f" % (
+                volume, config.min_tx_volume))
+            logging.info("Balance on %s: %f CNY - Balance on %s: %f BTC" % (
+                kask, self.clients[kask].cny_balance, kbid, self.clients[kbid].btc_balance))
             return
 
         current_time = time.time()

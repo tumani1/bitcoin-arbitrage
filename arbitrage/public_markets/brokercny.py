@@ -1,11 +1,8 @@
 # Copyright (C) 2016, Philsong <songbohr@gmail.com>
 
-import urllib.request
-import urllib.error
-import urllib.parse
-import json
-from .market import Market
 import lib.broker_api as exchange_api
+from .market import Market
+
 
 class BrokerCNY(Market):
     def __init__(self):

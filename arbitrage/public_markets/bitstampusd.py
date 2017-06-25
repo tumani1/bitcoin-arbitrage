@@ -1,8 +1,8 @@
-import urllib.request
+import json
 import urllib.error
 import urllib.parse
-import json
-import sys
+import urllib.request
+
 from .market import Market
 
 

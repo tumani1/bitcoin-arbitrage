@@ -1,19 +1,13 @@
+# coding:utf-8
 # Copyright (C) 2016, Philsong <songbohr@gmail.com>
 
-from .market import Market, TradeException
-import time
-import base64
-import hmac
-import urllib.request
-import urllib.parse
-import urllib.error
-import hashlib
-import sys
 import json
-import config
 import logging
-import lib.broker_api as exchange_api
 import traceback
+
+import lib.broker_api as exchange_api
+from .market import Market
+
 
 class PrivateBrokerCNY(Market):
     def __init__(self):
@@ -42,19 +36,19 @@ class PrivateBrokerCNY(Market):
     def _buy(self, amount, price, client_id=None):
         """Create a buy limit order"""
         if not client_id:
-            self.client_id+=1
+            self.client_id += 1
             client_id = self.client_id
             self.save()
-        
+
         exchange_api.exchange_buy(client_id, amount, price)
- 
+
     def _sell(self, amount, price, client_id=None):
         """Create a sell limit order"""
         if not client_id:
-            self.client_id+=1
+            self.client_id += 1
             client_id = self.client_id
             self.save()
-        
+
         exchange_api.exchange_sell(client_id, amount, price)
 
     def get_info(self):
@@ -75,5 +69,5 @@ class PrivateBrokerCNY(Market):
             for account in accounts:
                 self.btc_balance += account.available_btc
                 self.cny_balance += account.available_cny
-                self.btc_frozen +=  account.frozen_cny
-                self.cny_frozen +=  account.frozen_btc
+                self.btc_frozen += account.frozen_cny
+                self.cny_frozen += account.frozen_btc

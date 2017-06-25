@@ -1,8 +1,8 @@
 import logging
-import config
-import time
+
 from sleekxmpp import ClientXMPP
-from sleekxmpp.exceptions import IqError, IqTimeout
+
+import config
 from .observer import Observer
 
 
@@ -29,6 +29,7 @@ class MyXMPPClient(ClientXMPP):
         # TODO: Use this to control / re-config
         pass  # msg.reply("%(body)s" % msg).send()
 
+
 class XmppMessager(Observer):
     def __init__(self):
         self.xmppclient = MyXMPPClient()
@@ -36,5 +37,6 @@ class XmppMessager(Observer):
     def opportunity(self, profit, volume, buyprice, kask, sellprice, kbid, perc,
                     weighted_buyprice, weighted_sellprice):
         if profit > config.profit_thresh and perc > config.perc_thresh:
-            message = "profit: %f CNY with volume: %f BTC - buy at %.4f (%s) sell at %.4f (%s) ~%.2f%%" % (profit, volume, buyprice, kask, sellprice, kbid, perc)
+            message = "profit: %f CNY with volume: %f BTC - buy at %.4f (%s) sell at %.4f (%s) ~%.2f%%" % (
+                profit, volume, buyprice, kask, sellprice, kbid, perc)
             self.xmppclient.msend_message(message)

@@ -1,8 +1,10 @@
-import urllib.request
+import json
 import urllib.error
 import urllib.parse
-import json
+import urllib.request
+
 from .market import Market
+
 
 class Coinbase(Market):
     def __init__(self, currency, code):
@@ -15,7 +17,8 @@ class Coinbase(Market):
         req = urllib.request.Request(url, headers={
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "*/*",
-            "User-Agent": "curl/7.24.0 (x86_64-apple-darwin12.0)"})
+            "User-Agent": "curl/7.24.0 (x86_64-apple-darwin12.0)"
+        })
         res = urllib.request.urlopen(req)
         depth = json.loads(res.read().decode('utf8'))
         self.depth = self.format_depth(depth)

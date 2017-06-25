@@ -1,11 +1,11 @@
+# coding: utf-8
 # Copyright (C) 2013, Maxime Biais <maxime@biais.org>
 # Copyright (C) 2016, Phil Song <songbohr@gmail.com>
 
-import urllib.request
-import sys
 import json
 import logging
 import time
+import urllib.request
 
 
 class FiatConverter:
@@ -21,9 +21,9 @@ class FiatConverter:
             "EUR": 0.8825,
             "CNY": 6.5184,
         }
-        self.update_delay = 60 * 60 # every hour
+        self.update_delay = 60 * 60  # every hour
         self.last_update = 0
-        self.bank_fee = 0.007 # FIXME: bank fee
+        self.bank_fee = 0.007  # FIXME: bank fee
 
     def get_currency_pair(self, code_from, code_to):
         url = self.rate_exchange_url % (code_from, code_to)
@@ -34,6 +34,7 @@ class FiatConverter:
             rate = float(data["rate"]) * (1.0 - self.bank_fee)
         else:
             logging.error("Can't update fiat conversion rate: %s", url)
+
         return rate
 
     def get_currency_pair_yahoo(self, code_from, code_to):
@@ -46,18 +47,20 @@ class FiatConverter:
     def update_currency_pair(self, code_to):
         if code_to == "USD":
             return
+
         code_from = "USD"
         try:
             rate = self.get_currency_pair(code_from, code_to)
         except urllib.error.HTTPError:
             rate = self.get_currency_pair_yahoo(code_from, code_to)
+
         if rate:
             self.rates[code_to] = rate
 
     def update(self):
-        #CLOSE THE CONVERT
+        # CLOSE THE CONVERT
         return
-        
+
         timediff = time.time() - self.last_update
         if timediff < self.update_delay:
             return

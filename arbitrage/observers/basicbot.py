@@ -1,13 +1,11 @@
-import logging
-from .observer import Observer
 import json
-import time
-import os
+import logging
 import math
-import os, time
-import sys
-import traceback
+import time
+
 import config
+from .observer import Observer
+
 
 class BasicBot(Observer):
     def __init__(self):
@@ -22,7 +20,7 @@ class BasicBot(Observer):
 
         logging.info('BasicBot Setup complete')
 
-    def process_message(self,message):
+    def process_message(self, message):
         pass
 
     def msg_server(self):
@@ -30,7 +28,7 @@ class BasicBot(Observer):
         import time
         context = zmq.Context()
         socket = context.socket(zmq.PULL)
-        socket.bind("tcp://*:%s"%config.ZMQ_PORT)
+        socket.bind("tcp://*:%s" % config.ZMQ_PORT)
 
         logging.info("zmq msg_server start...")
         while not self.is_terminated:
@@ -39,7 +37,7 @@ class BasicBot(Observer):
             logging.info("new pull message: %s", message)
             self.process_message(message)
 
-            time.sleep (1) # Do some 'work'
+            time.sleep(1)  # Do some 'work'
 
     def notify_msg(self, type, price):
         import zmq
@@ -47,11 +45,11 @@ class BasicBot(Observer):
             context = zmq.Context()
             socket = context.socket(zmq.PUSH)
 
-            socket.connect ("tcp://%s:%s" % (config.ZMQ_HOST, config.ZMQ_PORT))
+            socket.connect("tcp://%s:%s" % (config.ZMQ_HOST, config.ZMQ_PORT))
             time.sleep(1)
 
-            message = {'type':type, 'price':price}
-            logging.info( "notify message %s", json.dumps(message))
+            message = {'type': type, 'price': price}
+            logging.info("notify message %s", json.dumps(message))
 
             socket.send_string(json.dumps(message))
         except Exception as e:
@@ -63,11 +61,11 @@ class BasicBot(Observer):
             if not price or not amount:
                 if type == 'buy':
                     price = self.get_buy_price()
-                    amount = math.floor((self.cny_balance/price)*10)/10
+                    amount = math.floor((self.cny_balance / price) * 10) / 10
                 else:
                     price = self.get_sell_price()
                     amount = math.floor(self.btc_balance * 10) / 10
-            
+
             if maker_only:
                 amount = min(self.max_maker_volume, amount)
                 if amount < self.min_maker_volume:
@@ -78,33 +76,33 @@ class BasicBot(Observer):
                 if amount < self.min_taker_volume:
                     logging.debug('Taker amount is too low %s %s' % (type, amount))
                     return None
-            
-            if maker_only:                
+
+            if maker_only:
                 if type == 'buy':
                     order_id = self.clients[kexchange].buy_maker(amount, price)
                 else:
                     order_id = self.clients[kexchange].sell_maker(amount, price)
             else:
                 if type == 'buy':
-                	order_id = self.clients[kexchange].buy(amount, price)
+                    order_id = self.clients[kexchange].buy(amount, price)
                 else:
                     order_id = self.clients[kexchange].sell(amount, price)
 
             if not order_id:
                 logging.warn("%s @%s %f/%f BTC failed" % (type, kexchange, amount, price))
                 return None
-            
+
             if order_id == -1:
                 logging.warn("%s @%s %f/%f BTC failed, %s" % (type, kexchange, amount, price, order_id))
                 return None
 
             order = {
-                'market': kexchange, 
+                'market': kexchange,
                 'id': order_id,
                 'price': price,
                 'amount': amount,
-                'deal_amount':0,
-                'deal_index': 0, 
+                'deal_amount': 0,
+                'deal_index': 0,
                 'type': type,
                 'maker_only': maker_only,
                 'time': time.time()
@@ -115,7 +113,6 @@ class BasicBot(Observer):
             return order
 
         return None
-        
 
     def cancel_order(self, kexchange, type, order_id):
         result = self.clients[kexchange].cancel_order(order_id)
@@ -152,4 +149,3 @@ class BasicBot(Observer):
 
     def get_spread(self):
         return self.sellprice - self.buyprice
-        

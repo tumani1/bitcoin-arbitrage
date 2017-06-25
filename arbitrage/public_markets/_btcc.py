@@ -1,8 +1,10 @@
-import urllib.request
+import json
 import urllib.error
 import urllib.parse
-import json
+import urllib.request
+
 from .market import Market
+
 
 class BTCC(Market):
     def __init__(self, currency, symbol):
@@ -19,4 +21,3 @@ class BTCC(Market):
         res = urllib.request.urlopen(req)
         depth = json.loads(res.read().decode('utf8'))
         self.depth = self.format_depth(depth)
-

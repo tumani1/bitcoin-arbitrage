@@ -1,7 +1,8 @@
-import urllib.request
+import json
 import urllib.error
 import urllib.parse
-import json
+import urllib.request
+
 from .market import Market
 
 
@@ -17,6 +18,7 @@ class PaymiumEUR(Market):
             'https://paymium.com/api/data/eur/depth')
         depth = json.loads(res.read().decode('utf8'))
         self.depth = self.format_depth(depth)
+
 
 if __name__ == "__main__":
     market = PaymiumEUR()

@@ -1,7 +1,8 @@
-import urllib.request
+import json
 import urllib.error
 import urllib.parse
-import json
+import urllib.request
+
 from .market import Market
 
 
@@ -28,6 +29,7 @@ class CampBXUSD(Market):
         bids = self.sort_and_format(depth['Bids'], True)
         asks = self.sort_and_format(depth['Asks'], False)
         return {'asks': asks, 'bids': bids}
+
 
 if __name__ == "__main__":
     market = CampBXUSD()

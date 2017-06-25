@@ -1,13 +1,15 @@
 import logging
-from .observer import Observer
-import config
-import smtplib
 import traceback
+
+import config
+from .observer import Observer
+
 
 def send_email(subject, msg):
     import smtplib
 
-    message = "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s\r\n" % (config.EMAIL_HOST_USER, ", ".join(config.EMAIL_RECEIVER), subject, msg)
+    message = "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s\r\n" % (
+        config.EMAIL_HOST_USER, ", ".join(config.EMAIL_RECEIVER), subject, msg)
     try:
         smtpserver = smtplib.SMTP(config.EMAIL_HOST)
         smtpserver.set_debuglevel(0)
@@ -16,12 +18,13 @@ def send_email(subject, msg):
         smtpserver.ehlo
         smtpserver.login(config.EMAIL_HOST_USER, config.EMAIL_HOST_PASSWORD)
         smtpserver.sendmail(config.EMAIL_HOST_USER, config.EMAIL_RECEIVER, message)
-        smtpserver.quit()  
-        smtpserver.close() 
-        logging.info("send mail success")      
+        smtpserver.quit()
+        smtpserver.close()
+        logging.info("send mail success")
     except:
         logging.error("send mail failed")
         traceback.print_exc()
+
 
 class Emailer(Observer):
     def opportunity(self, profit, volume, buyprice, kask, sellprice, kbid, perc,

@@ -1,10 +1,12 @@
 # Copyright (C) 2016, Philsong <songbohr@gmail.com>
 
-import urllib.request
+import json
 import urllib.error
 import urllib.parse
-import json
+import urllib.request
+
 from .market import Market
+
 
 class Huobi(Market):
     def __init__(self, currency, code):
@@ -23,5 +25,3 @@ class Huobi(Market):
         res = urllib.request.urlopen(req)
         depth = json.loads(res.read().decode('utf8'))
         self.depth = self.format_depth(depth)
-
-

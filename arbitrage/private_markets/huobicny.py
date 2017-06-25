@@ -1,25 +1,17 @@
-#-*- coding:utf-8 -*-s = u’示例’
+# coding:utf-8
 # Copyright (C) 2016, Philsong <songbohr@gmail.com>
 
-from .market import Market, TradeException
-import time
-import base64
-import hmac
-import urllib.request
-import urllib.parse
-import urllib.error
-import hashlib
-import sys
-import json
+import logging
+import traceback
+
+import config
 from lib.exchange import exchange
 from lib.settings import HUOBI_API_URL
-import sys
-import traceback
-import config
-import logging
+from .market import Market, TradeException
+
 
 class PrivateHuobiCNY(Market):
-    def __init__(self,HUOBI_API_KEY=None, HUOBI_SECRET_TOKEN=None):
+    def __init__(self, HUOBI_API_KEY=None, HUOBI_SECRET_TOKEN=None):
         super().__init__()
         if HUOBI_API_KEY == None:
             HUOBI_API_KEY = config.HUOBI_API_KEY
@@ -51,7 +43,6 @@ class PrivateHuobiCNY(Market):
 
         return response['id']
 
-
     def _get_order(self, order_id):
         response = self.market.orderInfo(order_id)
 
@@ -59,7 +50,7 @@ class PrivateHuobiCNY(Market):
             return response
 
         if "code" in response:
-            logging.warn (response)
+            logging.warn(response)
             return False
 
         resp = {}
@@ -84,7 +75,7 @@ class PrivateHuobiCNY(Market):
         if not response:
             return response
         if "code" in response:
-            logging.warn ('%s', str(response))
+            logging.warn('%s', str(response))
             return False
         if response['result'] == 'success':
             return True
@@ -108,4 +99,3 @@ class PrivateHuobiCNY(Market):
             traceback.print_exc()
 
             return False
-

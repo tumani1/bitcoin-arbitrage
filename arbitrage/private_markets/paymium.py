@@ -1,17 +1,17 @@
-from .market import Market
-import time
+# coding:utf-8
+
 import base64
-import hmac
-import urllib.request
-import urllib.parse
-import urllib.error
-import urllib.request
-import urllib.error
-import urllib.parse
-import hashlib
-import sys
 import json
+import time
+import urllib.error
+import urllib.error
+import urllib.parse
+import urllib.parse
+import urllib.request
+import urllib.request
+
 import config
+from .market import Market
 
 
 class PrivatePaymium(Market):
@@ -89,6 +89,7 @@ class PrivatePaymium(Market):
             self.eur_balance = response["EUR"]
             self.usd_balance = self.fc.convert(self.eur_balance, "EUR", "USD")
             self.cny_balance = self.fc.convert(self.eur_balance, "EUR", "CNY")
+
 
 if __name__ == "__main__":
     market = PrivatePaymium()

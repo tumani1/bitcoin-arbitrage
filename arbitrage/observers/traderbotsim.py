@@ -1,11 +1,11 @@
-import logging
-from .traderbot import TraderBot
 import json
+import logging
+
+from .traderbot import TraderBot
 
 
 class MockMarket(object):
-    def __init__(self, name, fee=0, cny_balance=3000., btc_balance=10.,
-                 persistent=True):
+    def __init__(self, name, fee=0, cny_balance=3000., btc_balance=10., persistent=True):
         self.name = name
         self.filename = "traderbot-sim-" + name + ".json"
         self.cny_balance = cny_balance
@@ -57,14 +57,14 @@ class MockMarket(object):
 
 class TraderBotSim(TraderBot):
     def __init__(self):
-        self.kraken = MockMarket("kraken", 0.005, 5000) # 0.5% fee
-        self.paymium = MockMarket("paymium", 0.005, 5000) # 0.5% fee
-        self.bitstamp = MockMarket("bitstamp", 0.005, 5000) # 0.5% fee
-        self.btcc = MockMarket("btcc", 0.005, 5000) # 0.5% fee
-        self.haobtc = MockMarket("haobtc", 0.002, 5000) # 0.2% fee
-        self.okcoin = MockMarket("okcoin", 0.000, 5000) # 0.0% fee
-        self.huobi = MockMarket("huobi", 0.000, 5000) # 0.0% fee
-        self.broker = MockMarket("broker", 0.000, 5000) # 0.0% fee
+        self.kraken = MockMarket("kraken", 0.005, 5000)  # 0.5% fee
+        self.paymium = MockMarket("paymium", 0.005, 5000)  # 0.5% fee
+        self.bitstamp = MockMarket("bitstamp", 0.005, 5000)  # 0.5% fee
+        self.btcc = MockMarket("btcc", 0.005, 5000)  # 0.5% fee
+        self.haobtc = MockMarket("haobtc", 0.002, 5000)  # 0.2% fee
+        self.okcoin = MockMarket("okcoin", 0.000, 5000)  # 0.0% fee
+        self.huobi = MockMarket("huobi", 0.000, 5000)  # 0.0% fee
+        self.broker = MockMarket("broker", 0.000, 5000)  # 0.0% fee
 
         self.clients = {
             "KrakenEUR": self.kraken,
@@ -89,7 +89,7 @@ class TraderBotSim(TraderBot):
 
     def total_cny_balance(self):
         return sum([i.cny_balance for i in set(self.clients.values())])
-    
+
     def total_usd_balance(self):
         return sum([i.usd_balance for i in set(self.clients.values())])
 

@@ -1,19 +1,13 @@
+# coding:utf-8
 # Copyright (C) 2016, Philsong <songbohr@gmail.com>
 
-from .market import Market, TradeException
-import time
-import base64
-import hmac
-import urllib.request
-import urllib.parse
-import urllib.error
-import hashlib
-import sys
-import json
+import logging
+
 import config
 from lib.exchange import exchange
 from lib.settings import HAOBTC_API_URL
-import logging
+from .market import Market
+
 
 class PrivateHaobtcCNY(Market):
     def __init__(self, HAOBTC_API_KEY=None, HAOBTC_SECRET_TOKEN=None):
@@ -21,7 +15,7 @@ class PrivateHaobtcCNY(Market):
         if HAOBTC_API_KEY == None:
             HAOBTC_API_KEY = config.HAOBTC_API_KEY
             HAOBTC_SECRET_TOKEN = config.HAOBTC_SECRET_TOKEN
-        self.market =  exchange(HAOBTC_API_URL, HAOBTC_API_KEY, HAOBTC_SECRET_TOKEN, 'haobtc')
+        self.market = exchange(HAOBTC_API_URL, HAOBTC_API_KEY, HAOBTC_SECRET_TOKEN, 'haobtc')
 
         self.currency = "CNY"
         self.get_info()
@@ -30,7 +24,7 @@ class PrivateHaobtcCNY(Market):
         """Create a buy limit order"""
         response = self.market.buy(amount, price)
         if response and "code" in response:
-            logging.warn (response)
+            logging.warn(response)
             return False
         if not response:
             return response
@@ -41,7 +35,7 @@ class PrivateHaobtcCNY(Market):
         """Create a sell limit order"""
         response = self.market.sell(amount, price)
         if response and "code" in response:
-            logging.warn (response)
+            logging.warn(response)
             return False
         if not response:
             return response
@@ -50,7 +44,7 @@ class PrivateHaobtcCNY(Market):
     def _buy_maker(self, amount, price):
         response = self.market.bidMakerOnly(amount, price)
         if response and "code" in response:
-            logging.warn (response)
+            logging.warn(response)
             return False
         if not response:
             return response
@@ -60,7 +54,7 @@ class PrivateHaobtcCNY(Market):
     def _sell_maker(self, amount, price):
         response = self.market.askMakerOnly(amount, price)
         if response and "code" in response:
-            logging.warn (response)
+            logging.warn(response)
             return False
         if not response:
             return response
@@ -71,11 +65,11 @@ class PrivateHaobtcCNY(Market):
         response = self.market.orderInfo(order_id)
         if not response:
             return response
-            
+
         if "code" in response:
-            logging.warn (response)
+            logging.warn(response)
             return False
-            
+
         return response
 
     def _cancel_order(self, order_id):
@@ -85,7 +79,7 @@ class PrivateHaobtcCNY(Market):
             return response
 
         if response and "code" in response:
-            logging.warn (response)
+            logging.warn(response)
             return False
 
         resp_order_id = response['order_id']
@@ -99,8 +93,8 @@ class PrivateHaobtcCNY(Market):
 
     def _cancel_all(self):
         response = self.market.cancelAll()
-        if response and  "code" in response:
-            logging.warn (response)
+        if response and "code" in response:
+            logging.warn(response)
             return False
         return response
 

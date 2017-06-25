@@ -1,14 +1,11 @@
 import logging
-import config
 import time
-from .observer import Observer
-from .emailer import send_email
-from fiatconverter import FiatConverter
-from private_markets import huobicny,okcoincny,brokercny
-import os, time
-import sys
 import traceback
+
+import config
+from private_markets import huobicny, okcoincny, brokercny
 from .basicbot import BasicBot
+
 
 class TraderBot(BasicBot):
     def __init__(self):
@@ -28,8 +25,8 @@ class TraderBot(BasicBot):
         self.trade_wait = config.trade_wait  # in seconds
         self.last_trade = 0
 
-        self.init_btc = {'OKCoinCNY':500, 'HuobiCNY':500}
-        self.init_cny = {'OKCoinCNY':100, 'HuobiCNY':100}
+        self.init_btc = {'OKCoinCNY': 500, 'HuobiCNY': 500}
+        self.init_cny = {'OKCoinCNY': 100, 'HuobiCNY': 100}
 
         self.stage0_percent = config.stage0_percent
         self.stage1_percent = config.stage1_percent
@@ -74,30 +71,32 @@ class TraderBot(BasicBot):
             for buy_order in buy_orders:
                 logging.debug(buy_order)
                 result = self.clients[buy_order['market']].get_order(buy_order['id'])
-                logging.debug (result)
+                logging.debug(result)
                 if not result:
                     logging.warn("get_order buy #%s failed" % (buy_order['id']))
                     continue
 
                 if result['status'] == 'CLOSE' or result['status'] == 'CANCELED':
                     if result['status'] == 'CANCELED':
-                        left_amount = result['amount']- result['deal_size']
-                        logging.info("cancel ok %s result['price'] = %s, left_amount=%s" % (buy_order['market'], result['price'], left_amount))
+                        left_amount = result['amount'] - result['deal_size']
+                        logging.info("cancel ok %s result['price'] = %s, left_amount=%s" % (
+                            buy_order['market'], result['price'], left_amount))
 
                         self.clients[self.hedger].buy(left_amount, result['price'])
 
                     self.remove_order(buy_order['id'])
                 else:
                     try:
-                        ask_price =  int(depths[buy_order['market']]["asks"][0]['price'])
+                        ask_price = int(depths[buy_order['market']]["asks"][0]['price'])
                     except  Exception as ex:
                         logging.warn("exception depths:%s" % ex)
                         traceback.print_exc()
                         continue
 
-                    if abs(result['price']-ask_price) > config.arbitrage_cancel_price_diff:
-                        left_amount = result['amount']- result['deal_size']
-                        logging.info("Fire:cancel %s ask_price %s result['price'] = %s, left_amount=%s" % (buy_order['market'], ask_price, result['price'], left_amount))
+                    if abs(result['price'] - ask_price) > config.arbitrage_cancel_price_diff:
+                        left_amount = result['amount'] - result['deal_size']
+                        logging.info("Fire:cancel %s ask_price %s result['price'] = %s, left_amount=%s" % (
+                            buy_order['market'], ask_price, result['price'], left_amount))
                         self.cancel_order(buy_order['market'], 'buy', buy_order['id'])
 
         if self.is_selling():
@@ -107,15 +106,16 @@ class TraderBot(BasicBot):
             for sell_order in self.get_orders('sell'):
                 logging.debug(sell_order)
                 result = self.clients[sell_order['market']].get_order(sell_order['id'])
-                logging.debug (result)
+                logging.debug(result)
                 if not result:
                     logging.warn("get_order sell #%s failed" % (sell_order['id']))
                     continue
 
                 if result['status'] == 'CLOSE' or result['status'] == 'CANCELED':
                     if result['status'] == 'CANCELED':
-                        left_amount = result['amount']- result['deal_size']
-                        logging.info("cancel ok %s result['price'] = %s, left_amount=%s" % (sell_order['market'], result['price'], left_amount))
+                        left_amount = result['amount'] - result['deal_size']
+                        logging.info("cancel ok %s result['price'] = %s, left_amount=%s" % (
+                            sell_order['market'], result['price'], left_amount))
 
                         self.clients[self.hedger].sell(left_amount, result['price'])
 
@@ -128,10 +128,11 @@ class TraderBot(BasicBot):
                         traceback.print_exc()
                         continue
 
-                    if abs(result['price']-bid_price) > config.arbitrage_cancel_price_diff:
-                        left_amount = result['amount']- result['deal_size']
+                    if abs(result['price'] - bid_price) > config.arbitrage_cancel_price_diff:
+                        left_amount = result['amount'] - result['deal_size']
 
-                        logging.info("Fire:cancel %s bid_price %s result['price'] = %s,left_amount=%s" % (sell_order['market'], bid_price, result['price'], left_amount))
+                        logging.info("Fire:cancel %s bid_price %s result['price'] = %s,left_amount=%s" % (
+                            sell_order['market'], bid_price, result['price'], left_amount))
                         self.cancel_order(sell_order['market'], 'sell', sell_order['id'])
 
     def opportunity(self, profit, volume, buyprice, kask, sellprice, kbid, perc,
@@ -153,42 +154,58 @@ class TraderBot(BasicBot):
 
         arbitrage_max_volume = config.max_tx_volume
         if profit < self.reverse_profit_thresh and perc < self.reverse_perc_thresh:
-            logging.info("Profit or profit percentage(%0.4f/%0.4f) lower than thresholds(%s/%s)" 
-                            % (profit, perc, self.reverse_profit_thresh, self.reverse_perc_thresh))
+            logging.info("Profit or profit percentage(%0.4f/%0.4f) lower than thresholds(%s/%s)"
+                         % (profit, perc, self.reverse_profit_thresh, self.reverse_perc_thresh))
             arbitrage_max_volume = config.reverse_max_tx_volume
 
-            if self.clients[kbid].btc_balance < self.stage0_percent*self.init_btc[kbid] or self.clients[kbid].cny_balance < self.stage0_percent*self.init_cny[kbid]:
+            if (
+                            self.clients[kbid].btc_balance < self.stage0_percent * self.init_btc[kbid] or
+                            self.clients[kbid].cny_balance < self.stage0_percent * self.init_cny[kbid]
+            ):
                 logging.info("Buy @%s/%0.2f and sell @%s/%0.2f %0.2f BTC" % (kask, buyprice, kbid, sellprice, volume))
-                logging.info("%s %s btc:%s < %s,cny:%s < %s,  reverse", self.stage0_percent, kbid, self.clients[kbid].btc_balance,  self.stage0_percent*self.init_btc[kbid], self.clients[kbid].cny_balance, self.stage0_percent*self.init_cny[kbid])
+                logging.info("%s %s btc:%s < %s,cny:%s < %s,  reverse", self.stage0_percent, kbid,
+                             self.clients[kbid].btc_balance, self.stage0_percent * self.init_btc[kbid],
+                             self.clients[kbid].cny_balance, self.stage0_percent * self.init_cny[kbid])
                 ktemp = kbid
                 kbid = kask
                 kask = ktemp
-            elif self.clients[kask].btc_balance < self.stage1_percent*self.init_btc[kask] or self.clients[kask].cny_balance < self.stage1_percent*self.init_cny[kask]:
-                arbitrage_max_volume = 0.5*(config.reverse_max_tx_volume+config.max_tx_volume)
+
+            elif (
+                            self.clients[kask].btc_balance < self.stage1_percent * self.init_btc[kask] or
+                            self.clients[kask].cny_balance < self.stage1_percent * self.init_cny[kask]
+            ):
+                arbitrage_max_volume = 0.5 * (config.reverse_max_tx_volume + config.max_tx_volume)
                 logging.info("Buy @%s/%0.2f and sell @%s/%0.2f %0.2f BTC" % (kask, buyprice, kbid, sellprice, volume))
-                logging.info("%s %s btc:%s < %s, cny:%s <%s, go on", self.stage1_percent, kask, self.clients[kask].btc_balance, self.stage1_percent*self.init_btc[kask],self.clients[kask].cny_balance, self.stage1_percent*self.init_cny[kask])
+                logging.info("%s %s btc:%s < %s, cny:%s <%s, go on", self.stage1_percent, kask,
+                             self.clients[kask].btc_balance, self.stage1_percent * self.init_btc[kask],
+                             self.clients[kask].cny_balance, self.stage1_percent * self.init_cny[kask])
+
             else:
                 logging.debug("wait for higher")
                 return
+
         elif profit > self.profit_thresh and perc > self.perc_thresh:
-            logging.info("Profit or profit percentage(%0.4f/%0.4f) higher than thresholds(%s/%s)" 
-                            % (profit, perc, self.profit_thresh, self.perc_thresh))    
+            logging.info("Profit or profit percentage(%0.4f/%0.4f) higher than thresholds(%s/%s)"
+                         % (profit, perc, self.profit_thresh, self.perc_thresh))
             arbitrage_max_volume = config.max_tx_volume
+
         else:
-            logging.debug("Profit or profit percentage(%0.4f/%0.4f) out of scope thresholds(%s~%s/%s~%s)" 
-                            % (profit, perc, self.reverse_profit_thresh, self.profit_thresh, self.perc_thresh, self.reverse_perc_thresh))
+            logging.debug("Profit or profit percentage(%0.4f/%0.4f) out of scope thresholds(%s~%s/%s~%s)"
+                          % (profit, perc, self.reverse_profit_thresh, self.profit_thresh, self.perc_thresh,
+                             self.reverse_perc_thresh))
             return
 
         if perc > 20:  # suspicous profit, added after discovering btc-central may send corrupted order book
-            logging.warn("Profit=%f seems malformed" % (perc, ))
+            logging.warn("Profit=%f seems malformed" % (perc,))
             return
 
-        max_volume = self.get_min_tradeable_volume(buyprice,
-                                                   self.clients[kask].cny_balance,
-                                                   self.clients[kbid].btc_balance)
+        max_volume = self.get_min_tradeable_volume(
+            buyprice, self.clients[kask].cny_balance, self.clients[kbid].btc_balance
+        )
+
         volume = min(volume, max_volume, arbitrage_max_volume)
         if volume < config.min_tx_volume:
-            logging.warn("Can't automate this trade, minimum volume transaction"+
+            logging.warn("Can't automate this trade, minimum volume transaction" +
                          " not reached %f/%f" % (volume, config.min_tx_volume))
             return
 
@@ -199,31 +216,31 @@ class TraderBot(BasicBot):
                          (current_time - self.last_trade))
             return
 
-        self.potential_trades.append([profit, volume, kask, kbid,
-                                      weighted_buyprice, weighted_sellprice,
-                                      buyprice, sellprice])
+        self.potential_trades.append([
+            profit, volume, kask, kbid, weighted_buyprice,
+            weighted_sellprice, buyprice, sellprice
+        ])
 
-    def execute_trade(self, volume, kask, kbid, weighted_buyprice,
-                      weighted_sellprice, buyprice, sellprice):
+    def execute_trade(self, volume, kask, kbid, weighted_buyprice, weighted_sellprice, buyprice, sellprice):
         volume = float('%0.2f' % volume)
 
-        if self.clients[kask].cny_balance < max(volume*buyprice*10, 31*buyprice):
+        if self.clients[kask].cny_balance < max(volume * buyprice * 10, 31 * buyprice):
             logging.warn("%s cny is insufficent" % kask)
             return
- 
-        if self.clients[kbid].btc_balance < max(volume*10, 31):
+
+        if self.clients[kbid].btc_balance < max(volume * 10, 31):
             logging.warn("%s btc is insufficent" % kbid)
             return
 
         logging.info("Fire:Buy @%s/%0.2f and sell @%s/%0.2f %0.2f BTC" % (kask, buyprice, kbid, sellprice, volume))
 
         # update trend
+        self.trend_up = False
         if self.last_bid_price < buyprice:
             self.trend_up = True
-        else:
-            self.trend_up = False
 
-        logging.info("trend is %s[%s->%s]", "up, buy then sell" if self.trend_up else "down, sell then buy", self.last_bid_price, buyprice)
+        logging.info("trend is %s[%s->%s]", "up, buy then sell" if self.trend_up else "down, sell then buy",
+                     self.last_bid_price, buyprice)
         self.last_bid_price = buyprice
 
         # trade
@@ -235,16 +252,16 @@ class TraderBot(BasicBot):
 
             self.last_trade = time.time()
 
-            result = self.new_order(kbid, 'sell', maker_only=False, amount= volume,  price=sellprice)
+            result = self.new_order(kbid, 'sell', maker_only=False, amount=volume, price=sellprice)
             if not result:
                 logging.warn("Sell @%s %f BTC failed" % (kbid, volume))
                 result = self.new_order(kask, 'sell', maker_only=False, amount=volume, price=buyprice)
                 if not result:
                     logging.warn("2nd sell @%s %f BTC failed" % (kask, volume))
                     return
-        else:
 
-            result = self.new_order(kbid, 'sell', maker_only=False, amount= volume,  price=sellprice)
+        else:
+            result = self.new_order(kbid, 'sell', maker_only=False, amount=volume, price=sellprice)
             if not result:
                 logging.warn("Sell @%s %f BTC failed" % (kbid, volume))
                 return
@@ -254,9 +271,9 @@ class TraderBot(BasicBot):
             result = self.new_order(kask, 'buy', maker_only=False, amount=volume, price=buyprice)
             if not result:
                 logging.warn("Buy @%s %f BTC failed" % (kask, volume))
-                result = self.new_order(kbid, 'buy', maker_only=False, amount= volume,  price=sellprice)
+                result = self.new_order(kbid, 'buy', maker_only=False, amount=volume, price=sellprice)
                 if not result:
                     logging.warn("2nd buy @%s %f BTC failed" % (kbid, volume))
                     return
-        return
 
+        return

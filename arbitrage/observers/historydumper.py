@@ -1,8 +1,9 @@
-from .observer import Observer
 import json
-import time
-import os
 import logging
+import os
+import time
+
+from .observer import Observer
 
 
 class HistoryDumper(Observer):
@@ -16,10 +17,10 @@ class HistoryDumper(Observer):
 
     def begin_opportunity_finder(self, depths):
         filename = self.out_dir + 'order-book-' + \
-            str(int(time.time())) + '.json'
+                   str(int(time.time())) + '.json'
         fp = open(filename, 'w')
         json.dump(depths, fp)
-        logging.debug (depths)
+        logging.debug(depths)
 
     def end_opportunity_finder(self):
         pass
