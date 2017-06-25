@@ -1,0 +1,6 @@
+requests
+thriftpy
+sleekxmpp
+zmq
+pytz
+nose
