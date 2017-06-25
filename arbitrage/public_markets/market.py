@@ -1,15 +1,15 @@
+import logging
+import threading
 import time
-import urllib.request
+import traceback
 import urllib.error
 import urllib.parse
+import urllib.request
+
 import config
-import logging
-import sys
 from fiatconverter import FiatConverter
 from utils import log_exception
-import traceback
-import config
-import threading
+
 
 class Market(object):
     def __init__(self, currency):
@@ -20,6 +20,10 @@ class Market(object):
         self.fc = FiatConverter()
         self.fc.update()
         self.is_terminated = False
+        self.depth = {
+            'asks': [{'price': 0, 'amount': 0}],
+            'bids': [{'price': 0, 'amount': 0}],
+        }
 
     def terminate(self):
         self.is_terminated = True
@@ -28,7 +32,7 @@ class Market(object):
         timediff = time.time() - self.depth_updated
         if timediff > self.update_rate:
             self.ask_update_depth()
-            
+
         timediff = time.time() - self.depth_updated
         if timediff > config.market_expiration_time:
             logging.warn('Market: %s order book is expired' % self.name)
@@ -45,7 +49,7 @@ class Market(object):
 
     def start_websocket_depth(self):
         if config.SUPPORT_WEBSOCKET:
-            t = threading.Thread(target = self.websocket_depth)
+            t = threading.Thread(target=self.websocket_depth)
             t.start()
 
     def websocket_depth(self):
@@ -61,21 +65,20 @@ class Market(object):
             depth = data[1]
 
             logging.debug("depth coming: %s", depth['market'])
-            self.depth_updated = int(depth['timestamp']/1000)
+            self.depth_updated = int(depth['timestamp'] / 1000)
             self.depth = self.format_depth(depth)
-        
+
         def on_connect():
             logging.info('[Connected]')
 
-            socketIO.emit('land', {'app': 'haobtcnotify', 'events':[self.event]});
+            socketIO.emit('land', {'app': 'haobtcnotify', 'events': [self.event]});
 
         with SocketIO(config.WEBSOCKET_HOST, port=config.WEBSOCKET_PORT) as socketIO:
-
             socketIO.on('connect', on_connect)
             socketIO.on('message', on_message)
 
             socketIO.wait()
-    
+
     def ask_update_depth(self):
         try:
             self.update_depth()
@@ -110,13 +113,20 @@ class Market(object):
         pass
 
     def sort_and_format(self, l, reverse=False):
-        l.sort(key=lambda x: float(x[0]), reverse=reverse)
-        r = []
-        for i in l:
-            r.append({'price': float(i[0]), 'amount': float(i[1])})
-        return r
+        if not len(l):
+            return []
+
+        if isinstance(l[0], list):
+            l.sort(key=lambda x: float(x[0]), reverse=reverse)
+            l = [{'price': float(i[0]), 'amount': float(i[1])} for i in l]
+        else:
+            l.sort(key=lambda x: float(x['price']), reverse=reverse)
+            l = [{'price': float(i['price']), 'amount': float(i['amount'])} for i in l]
+
+        return l
 
     def format_depth(self, depth):
-        bids = self.sort_and_format(depth['bids'], True)
-        asks = self.sort_and_format(depth['asks'], False)
-        return {'asks': asks, 'bids': bids}
+        return {
+            'asks': self.sort_and_format(depth['asks'], False),
+            'bids': self.sort_and_format(depth['bids'], True),
+        }

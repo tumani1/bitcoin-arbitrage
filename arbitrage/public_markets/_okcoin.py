@@ -1,8 +1,10 @@
-import urllib.request
+import json
 import urllib.error
 import urllib.parse
-import json
+import urllib.request
+
 from .market import Market
+
 
 class OKCoin(Market):
     def __init__(self, currency, code):
