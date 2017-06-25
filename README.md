@@ -14,12 +14,10 @@ Currently supported exchanges to get data:
  - Gemini (USD)
  - BTCC (CNY)
  - Coinbase Exchange (USD)
- - Haobtc (CNY)
  - Huobi (CNY)
 
 Currently supported exchanges to automate trade:
  - Bitstamp (USD)
- - Haobtc (CNY)
  - OkCoin (CNY)
  - Huobi (CNY)
 
@@ -40,23 +38,6 @@ Donation are always welcome:
 Then edit config.py file to setup your preferences: watched markets
 and observers
 
-You need Python3 to run this program. To install on Debian, Ubuntu, or
-variants of them, use:
-
-    $ sudo apt-get install python3 python3-pip python-nose
-    $ pip3 install requests zmq
-
-You need market broker service, please read its README to install then run it. 
-  
-    https://github.com/philsong/bitcoin-broker 
-
-To connect the broker server you will need to install thriftpy:
-
-    $ pip3 install cython thriftpy
-
-To use the observer XMPPMessager you will need to install sleekxmpp:
-
-    $ pip3 install sleekxmpp
 
 # Run
 
@@ -66,9 +47,9 @@ To run the opportunity watcher:
 
 To check your balance on an exchange (also a good way to check your accounts configuration):
 
-    $ python3 arbitrage/arbitrage.py -m HaobtcCNY get-balance
-    $ python3 arbitrage/arbitrage.py -m HaobtcCNY,BitstampUSD get-balance
-    $ python3 arbitrage/arbitrage.py -m HaobtcCNY,OkCoinCNY,HuobiCNY get-balance
+    $ python3 arbitrage/arbitrage.py -m KrakenUSD get-balance
+    $ python3 arbitrage/arbitrage.py -m KrakenUSD,BitstampUSD get-balance
+    $ python3 arbitrage/arbitrage.py -m KrakenUSD,OkCoinCNY,HuobiCNY get-balance
 
 Run tests
 
@@ -88,12 +69,12 @@ Help
 
 arbitrage in haobtc, huobi or okcoin
 
-    $ python3 arbitrage/arbitrage.py -oTraderBot -mHaobtcCNY,HuobiCNY
-    $ python3 arbitrage/arbitrage.py -oTraderBot -mHaobtcCNY,OKCoinCNY
+    $ python3 arbitrage/arbitrage.py -oTraderBot -mKrakenUSD,HuobiCNY
+    $ python3 arbitrage/arbitrage.py -oTraderBot -mKrakenUSD,OKCoinCNY
 
 balance statatistic 
 
-    $ python3 arbitrage/arbitrage.py -oBalanceDumper -mHaobtcCNY
+    $ python3 arbitrage/arbitrage.py -oBalanceDumper -mKrakenUSD
     
 # TODO
 

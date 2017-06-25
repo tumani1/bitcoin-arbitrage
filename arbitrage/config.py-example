@@ -8,9 +8,8 @@ markets = [
 # "CoinbaseUSD",
 # "GeminiUSD",
 # "KrakenEUR",
-# "KrakenUSD",
+  "KrakenUSD",
 # "OKCoinCNY",
-"HaobtcCNY",
 # "HuobiCNY",
 # "PaymiumEUR",
 ]
